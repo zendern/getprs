@@ -40,12 +40,14 @@ func main() {
 
 	client := github.NewClient(tc)
 
+	fmt.Println(">>> FINDING ORG BY NAME : ", Bold(orgName))
 	org, _, err := client.Organizations.Get(ctx, orgName)
 	if err != nil {
 		fmt.Println(">>> Failed to find organization with name - " + orgName + "<<< : " + err.Error())
 		os.Exit(1)
 	}
 
+	fmt.Println(">>> GETTING ALL TEAMS FOR ORG: ", Bold(orgName))
 	options := &github.ListOptions{PerPage: 1000}
 	teams, _, err := client.Teams.ListTeams(ctx, *org.Name, options)
 	if err != nil {
@@ -65,6 +67,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Println(">>> GETTING MEMBERS ON TEAM : ", Bold(teamName))
 	teamMemberOpts := &github.TeamListTeamMembersOptions{ListOptions: *options}
 	teamMembers, _, err := client.Teams.ListTeamMembers(ctx, *foundTeam.ID, teamMemberOpts)
 	if err != nil {
@@ -72,6 +75,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Println(">>> FINDING ALL OPEN PRS FOR TEAM : ", Bold(teamName))
+	fmt.Println("\n")
 	searchOpts := &github.SearchOptions{ListOptions: *options}
 	q := "org:cahcommercial is:open is:pr"
 	for _, member := range teamMembers {
@@ -85,4 +90,5 @@ func main() {
 	for _, issue := range issues.Issues {
 		fmt.Println(Green(*issue.Title), "(", Bold(*issue.User.Login), ") \n\t", Blue(*issue.HTMLURL))
 	}
+	fmt.Println("\n")
 }
