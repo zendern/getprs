@@ -85,35 +85,4 @@ func main() {
 	for _, issue := range issues.Issues {
 		fmt.Println(Green(*issue.Title), "(", Bold(*issue.User.Login), ") \n\t", Blue(*issue.HTMLURL))
 	}
-
-
-
-
-	//repos, _, err := client.Teams.ListTeamRepos(ctx, *foundTeam.ID, options)
-	//if err != nil {
-	//	fmt.Println(">>> Failed to find repos for team name - " + *foundTeam.Slug + "<<< : " + err.Error())
-	//	os.Exit(1)
-	//}
-	//
-	//for _, repo := range repos {
-	//	if *repo.OpenIssuesCount > 0 {
-	//		fmt.Println("Repo has issues currently : " + *repo.Name)
-	//
-	//		prs, _, err := client.PullRequests.List(ctx, orgName, *repo.Name, nil)
-	//		if err != nil {
-	//			fmt.Println(">>> Failed to get prs for repo with name - " + *repo.Name + "<<< : " + err.Error())
-	//			os.Exit(1)
-	//		}
-	//
-	//		for _, pr := range prs {
-	//			for _, member := range teamMembers {
-	//				fmt.Println(*member.Login)
-	//				fmt.Println(*pr.User.Login)
-	//				if *member.ID == *pr.User.ID {
-	//					fmt.Println(pr.URL)
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
 }
