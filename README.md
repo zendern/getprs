@@ -9,6 +9,22 @@ Download the executable found in this repo
 
 Or build clone the repo and build it yourself for whatever platform you need.
 
+# How to run it
+
+Mac OSX
+```
+./getprs <github api token> <organization> <team name>
+```
+
+Windows
+```
+getprs.exe <github api token> <organization> <team name>
+```
+
+## Where do i get this github api token thing??!?!?
+
+See [here](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/) for a guide on how to do that 
+
 # Screenshot
 
 ![in action](https://github.com/cah-nathanzender/getprs/blob/master/screenshot.png)
