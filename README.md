@@ -9,7 +9,7 @@ Download the executable found in this repo
 
 Or build clone the repo and build it yourself for whatever platform you need.
 
-#Screenshot
+# Screenshot
 
 ![in action](https://github.com/cah-nathanzender/getprs/blob/master/screenshot.png)
 
