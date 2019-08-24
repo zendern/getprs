@@ -1,6 +1,9 @@
 package main
 
-import "golang.org/x/oauth2"
+import (
+	"golang.org/x/oauth2"
+	"strconv"
+)
 import "github.com/google/go-github/github"
 import (
 	"golang.org/x/net/context"
@@ -88,7 +91,33 @@ func main() {
 		os.Exit(1)
 	}
 	for _, issue := range issues.Issues {
-		fmt.Println(Green(*issue.Title), "(", Bold(*issue.User.Login), ") \n\t", Blue(*issue.HTMLURL))
+		positionOfLastSlash := strings.LastIndex(*issue.RepositoryURL, "/")
+		repoUrl := *issue.RepositoryURL;
+		repoName := repoUrl[positionOfLastSlash+1 : len(repoUrl)]
+		prReviews, _, err := client.PullRequests.ListReviews(ctx, orgName, repoName, *issue.Number, options)
+		if err != nil {
+			fmt.Println(">>> Failed to find PR reviews for issue - " + strconv.Itoa(*issue.Number) + "<<< : " + err.Error())
+			os.Exit(1)
+		}
+		hasBeenApproved := Any(prReviews, func(s *github.PullRequestReview) bool {
+			return *s.State == "APPROVED"
+		})
+		var uiApprovedState string
+		if hasBeenApproved {
+			uiApprovedState = "\u2705"
+		} else{
+			uiApprovedState = "\u274C"
+		}
+		fmt.Println(uiApprovedState, Green(*issue.Title), "(", Bold(*issue.User.Login), ") \t", Blue(*issue.HTMLURL))
 	}
 	fmt.Println("\n")
+}
+
+func Any(vs []*github.PullRequestReview, f func(review *github.PullRequestReview) bool) bool {
+	for _, v := range vs {
+		if f(v) {
+			return true
+		}
+	}
+	return false
 }
