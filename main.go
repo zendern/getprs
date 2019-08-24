@@ -78,7 +78,7 @@ func main() {
 	fmt.Println(">>> FINDING ALL OPEN PRS FOR TEAM : ", Bold(teamName))
 	fmt.Println("\n")
 	searchOpts := &github.SearchOptions{ListOptions: *options}
-	q := "org:cahcommercial is:open is:pr"
+	q := fmt.Sprintf("org:%s is:open is:pr", orgName)
 	for _, member := range teamMembers {
 		q += " author:" + *member.Login
 	}
