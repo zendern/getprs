@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/zendern/getprs/models"
+	"github.com/zendern/getprs/renderer"
 	"golang.org/x/oauth2"
 	"strconv"
 )
@@ -14,8 +16,8 @@ import (
 import . "github.com/logrusorgru/aurora"
 
 func main() {
-	if len(os.Args) < 4 {
-		fmt.Println("Arguments required. <personal access token> <organization> <team name>")
+	if len(os.Args) < 4  {
+		fmt.Println("Arguments required. <personal access token> <organization> <team name> <renderer [text, json] optional>")
 		os.Exit(1)
 	}
 	if strings.Trim(os.Args[1], " ") == "" {
@@ -29,6 +31,24 @@ func main() {
 	if strings.Trim(os.Args[3], " ") == "" {
 		fmt.Println("Team name must not be blank")
 		os.Exit(1)
+	}
+
+	fmt.Println(os.Args)
+	var renderType string
+	if len(os.Args) == 5 {
+		trimmedRenderType := strings.Trim(os.Args[4], " ")
+		if 	trimmedRenderType == "" {
+			renderType = "text"
+		}else{
+			if trimmedRenderType == "text" || trimmedRenderType == "json"{
+				renderType = os.Args[4]
+			}else{
+				fmt.Println("Renderer must be one of the allowed values. [txt or json]")
+				os.Exit(1)
+			}
+		}
+	}else{
+		renderType = "text"
 	}
 
 	accessToken := os.Args[1]
@@ -90,6 +110,8 @@ func main() {
 		fmt.Println(">>> Failed to find issues for query - " + q + "<<< : " + err.Error())
 		os.Exit(1)
 	}
+
+	statuses := make([]models.PRStatus, 0)
 	for _, issue := range issues.Issues {
 		positionOfLastSlash := strings.LastIndex(*issue.RepositoryURL, "/")
 		repoUrl := *issue.RepositoryURL;
@@ -108,9 +130,20 @@ func main() {
 		} else{
 			uiApprovedState = "\u274C"
 		}
-		fmt.Println(uiApprovedState, Green(*issue.Title), "(", Bold(*issue.User.Login), ") \t", Blue(*issue.HTMLURL))
+
+		statuses = append(statuses, models.PRStatus{
+			Username: *issue.User.Login,
+			Title: *issue.Title,
+			ApprovedStatus: uiApprovedState,
+			PullRequestUrl: *issue.HTMLURL,
+		})
 	}
-	fmt.Println("\n")
+
+	if renderType == "json" {
+		renderer.RenderJson(statuses)
+	} else if renderType == "text" {
+		renderer.RenderText(statuses)
+	}
 }
 
 func Any(vs []*github.PullRequestReview, f func(review *github.PullRequestReview) bool) bool {
