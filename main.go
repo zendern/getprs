@@ -16,6 +16,8 @@ import (
 )
 import . "github.com/logrusorgru/aurora"
 
+var options = &github.ListOptions{PerPage: 1000}
+
 func main() {
 	if len(os.Args) < 4  {
 		fmt.Println("Arguments required. <personal access token> <organization> <team name> <renderer [text, json, table] optional>")
@@ -60,84 +62,13 @@ func main() {
 		&oauth2.Token{AccessToken: accessToken},
 	)
 	tc := oauth2.NewClient(ctx, ts)
-
 	client := github.NewClient(tc)
 
-	fmt.Println(">>> FINDING ORG BY NAME : ", Bold(orgName))
-	org, _, err := client.Organizations.Get(ctx, orgName)
-	if err != nil {
-		fmt.Println(">>> Failed to find organization with name - " + orgName + "<<< : " + err.Error())
-		os.Exit(1)
-	}
-
-	fmt.Println(">>> GETTING ALL TEAMS FOR ORG: ", Bold(orgName))
-	options := &github.ListOptions{PerPage: 1000}
-	teams, _, err := client.Teams.ListTeams(ctx, *org.Name, options)
-	if err != nil {
-		fmt.Println(">>> Failed to find teams for org with name - " + orgName + "<<< : " + err.Error())
-		os.Exit(1)
-	}
-
-	var foundTeam *github.Team;
-	for _, team := range teams {
-		if *team.Name == teamName || *team.Slug == teamName {
-			foundTeam = team
-		}
-	}
-
-	if foundTeam == nil {
-		fmt.Println(">>> Failed to find team with name - " + teamName)
-		os.Exit(1)
-	}
-
-	fmt.Println(">>> GETTING MEMBERS ON TEAM : ", Bold(teamName))
-	teamMemberOpts := &github.TeamListTeamMembersOptions{ListOptions: *options}
-	teamMembers, _, err := client.Teams.ListTeamMembers(ctx, *foundTeam.ID, teamMemberOpts)
-	if err != nil {
-		fmt.Println(">>> Failed to find team members for team name - " + *foundTeam.Slug + "<<< : " + err.Error())
-		os.Exit(1)
-	}
-
-	fmt.Println(">>> FINDING ALL OPEN PRS FOR TEAM : ", Bold(teamName))
-	fmt.Println("\n")
-	searchOpts := &github.SearchOptions{ListOptions: *options}
-	q := fmt.Sprintf("org:%s is:open is:pr", orgName)
-	for _, member := range teamMembers {
-		q += " author:" + *member.Login
-	}
-	issues, _, err := client.Search.Issues(ctx, q, searchOpts)
-	if err != nil {
-		fmt.Println(">>> Failed to find issues for query - " + q + "<<< : " + err.Error())
-		os.Exit(1)
-	}
-
-	statuses := make([]models.PRStatus, 0)
-	for _, issue := range issues.Issues {
-		positionOfLastSlash := strings.LastIndex(*issue.RepositoryURL, "/")
-		repoUrl := *issue.RepositoryURL;
-		repoName := repoUrl[positionOfLastSlash+1 : len(repoUrl)]
-		prReviews, _, err := client.PullRequests.ListReviews(ctx, orgName, repoName, *issue.Number, options)
-		if err != nil {
-			fmt.Println(">>> Failed to find PR reviews for issue - " + strconv.Itoa(*issue.Number) + "<<< : " + err.Error())
-			os.Exit(1)
-		}
-		hasBeenApproved := Any(prReviews, func(s *github.PullRequestReview) bool {
-			return *s.State == "APPROVED"
-		})
-		var uiApprovedState string
-		if hasBeenApproved {
-			uiApprovedState = "\u2705"
-		} else{
-			uiApprovedState = "\u274C"
-		}
-
-		statuses = append(statuses, models.PRStatus{
-			Username: *issue.User.Login,
-			Title: *issue.Title,
-			ApprovedStatus: uiApprovedState,
-			PullRequestUrl: *issue.HTMLURL,
-		})
-	}
+	org := getOrgByName(ctx, client, orgName)
+	foundTeam := getTeam(ctx, client, org, teamName)
+	teamMembers := getAllTeamMembers(ctx, client, foundTeam)
+	issues := getAllOpenPRs(ctx, client, org, foundTeam, teamMembers)
+	statuses := getPRStatuses(ctx, client, org, issues)
 
 	sort.Sort(models.ByStatus(statuses))
 
@@ -148,6 +79,94 @@ func main() {
 	} else if renderType == "table" {
 		renderer.RenderTable(statuses)
 	}
+}
+
+func getOrgByName(ctx context.Context, client *github.Client, orgName string) *github.Organization {
+	fmt.Println(">>> FINDING ORG BY NAME : ", Bold(orgName))
+	org, _, err := client.Organizations.Get(ctx, orgName)
+	if err != nil {
+		fmt.Println(">>> Failed to find organization with name - " + orgName + "<<< : " + err.Error())
+		os.Exit(1)
+	}
+	return org
+}
+
+func getPRStatuses(ctx context.Context, client *github.Client, org *github.Organization, issues *github.IssuesSearchResult) []models.PRStatus {
+	statuses := make([]models.PRStatus, 0)
+	for _, issue := range issues.Issues {
+		positionOfLastSlash := strings.LastIndex(*issue.RepositoryURL, "/")
+		repoUrl := *issue.RepositoryURL;
+		repoName := repoUrl[positionOfLastSlash+1 : len(repoUrl)]
+		prReviews, _, err := client.PullRequests.ListReviews(ctx, *org.Name, repoName, *issue.Number, options)
+		if err != nil {
+			fmt.Println(">>> Failed to find PR reviews for issue - " + strconv.Itoa(*issue.Number) + "<<< : " + err.Error())
+			os.Exit(1)
+		}
+		hasBeenApproved := Any(prReviews, func(s *github.PullRequestReview) bool {
+			return *s.State == "APPROVED"
+		})
+		var uiApprovedState string
+		if hasBeenApproved {
+			uiApprovedState = "\u2705"
+		} else {
+			uiApprovedState = "\u274C"
+		}
+
+		statuses = append(statuses, models.PRStatus{
+			Username:       *issue.User.Login,
+			Title:          *issue.Title,
+			ApprovedStatus: uiApprovedState,
+			PullRequestUrl: *issue.HTMLURL,
+		})
+	}
+	return statuses
+}
+
+func getTeam(ctx context.Context, client *github.Client, org *github.Organization, teamName string) *github.Team {
+	fmt.Println(">>> GETTING ALL TEAMS FOR ORG: ", Bold(*org.Name))
+	teams, _, err := client.Teams.ListTeams(ctx, *org.Name, options)
+	if err != nil {
+		fmt.Println(">>> Failed to find teams for org with name - " + *org.Name + "<<< : " + err.Error())
+		os.Exit(1)
+	}
+	var foundTeam *github.Team
+	for _, team := range teams {
+		if *team.Name == teamName || *team.Slug == teamName {
+			foundTeam = team
+		}
+	}
+	if foundTeam == nil {
+		fmt.Println(">>> Failed to find team with name - " + teamName)
+		os.Exit(1)
+	}
+	return foundTeam
+}
+
+func getAllOpenPRs(ctx context.Context, client *github.Client, org *github.Organization, foundTeam *github.Team, teamMembers []*github.User) *github.IssuesSearchResult {
+	fmt.Println(">>> FINDING ALL OPEN PRS FOR TEAM : ", Bold(*foundTeam.Name))
+	fmt.Println("\n")
+	searchOpts := &github.SearchOptions{ListOptions: *options}
+	q := fmt.Sprintf("org:%s is:open is:pr", *org.Name)
+	for _, member := range teamMembers {
+		q += " author:" + *member.Login
+	}
+	issues, _, err := client.Search.Issues(ctx, q, searchOpts)
+	if err != nil {
+		fmt.Println(">>> Failed to find issues for query - " + q + "<<< : " + err.Error())
+		os.Exit(1)
+	}
+	return issues
+}
+
+func getAllTeamMembers(ctx context.Context, client *github.Client,foundTeam *github.Team) []*github.User {
+	fmt.Println(">>> GETTING MEMBERS ON TEAM : ", Bold(*foundTeam.Name))
+	teamMemberOpts := &github.TeamListTeamMembersOptions{ListOptions: *options}
+	teamMembers, _, err := client.Teams.ListTeamMembers(ctx, *foundTeam.ID, teamMemberOpts)
+	if err != nil {
+		fmt.Println(">>> Failed to find team members for team name - " + *foundTeam.Slug + "<<< : " + err.Error())
+		os.Exit(1)
+	}
+	return teamMembers
 }
 
 func Any(vs []*github.PullRequestReview, f func(review *github.PullRequestReview) bool) bool {
