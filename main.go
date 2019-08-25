@@ -4,6 +4,7 @@ import (
 	"github.com/zendern/getprs/models"
 	"github.com/zendern/getprs/renderer"
 	"golang.org/x/oauth2"
+	"sort"
 	"strconv"
 )
 import "github.com/google/go-github/github"
@@ -17,7 +18,7 @@ import . "github.com/logrusorgru/aurora"
 
 func main() {
 	if len(os.Args) < 4  {
-		fmt.Println("Arguments required. <personal access token> <organization> <team name> <renderer [text, json] optional>")
+		fmt.Println("Arguments required. <personal access token> <organization> <team name> <renderer [text, json, table] optional>")
 		os.Exit(1)
 	}
 	if strings.Trim(os.Args[1], " ") == "" {
@@ -38,9 +39,9 @@ func main() {
 	if len(os.Args) == 5 {
 		trimmedRenderType := strings.Trim(os.Args[4], " ")
 		if 	trimmedRenderType == "" {
-			renderType = "text"
+			renderType = "table"
 		}else{
-			if trimmedRenderType == "text" || trimmedRenderType == "json"{
+			if trimmedRenderType == "table" || trimmedRenderType == "text" || trimmedRenderType == "json"{
 				renderType = os.Args[4]
 			}else{
 				fmt.Println("Renderer must be one of the allowed values. [txt or json]")
@@ -48,7 +49,7 @@ func main() {
 			}
 		}
 	}else{
-		renderType = "text"
+		renderType = "table"
 	}
 
 	accessToken := os.Args[1]
@@ -139,10 +140,14 @@ func main() {
 		})
 	}
 
+	sort.Sort(models.ByStatus(statuses))
+
 	if renderType == "json" {
 		renderer.RenderJson(statuses)
 	} else if renderType == "text" {
 		renderer.RenderText(statuses)
+	} else if renderType == "table" {
+		renderer.RenderTable(statuses)
 	}
 }
 

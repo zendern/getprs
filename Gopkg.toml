@@ -40,3 +40,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/logrusorgru/aurora"
+
+[[constraint]]
+  name = "github.com/olekukonko/tablewriter"
+  version = "0.0.1"
