@@ -34,7 +34,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println(os.Args)
 	var renderType string
 	if len(os.Args) == 5 {
 		trimmedRenderType := strings.Trim(os.Args[4], " ")
