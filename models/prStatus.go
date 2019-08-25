@@ -1,10 +1,13 @@
 package models
 
+import "time"
+
 type PRStatus struct {
 	Username string
 	Title string
 	ApprovedStatus string
 	PullRequestUrl string
+	TimeSinceOpened time.Time
 }
 
 type ByStatus []PRStatus

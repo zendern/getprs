@@ -9,8 +9,8 @@ import (
 )
 import "github.com/google/go-github/github"
 import (
-	"golang.org/x/net/context"
 	"fmt"
+	"golang.org/x/net/context"
 	"os"
 	"strings"
 )
@@ -117,6 +117,7 @@ func getPRStatuses(ctx context.Context, client *github.Client, org *github.Organ
 			Title:          *issue.Title,
 			ApprovedStatus: uiApprovedState,
 			PullRequestUrl: *issue.HTMLURL,
+			TimeSinceOpened: *issue.CreatedAt,
 		})
 	}
 	return statuses
