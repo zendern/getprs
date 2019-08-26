@@ -30,7 +30,12 @@ See [here](https://help.github.com/articles/creating-a-personal-access-token-for
 
 # Screenshot
 
-![in action](https://github.com/zendern/getprs/blob/master/screenshots/json.png)
+Table output (default)
 ![in action](https://github.com/zendern/getprs/blob/master/screenshots/table.png)
+
+JSON output
+![in action](https://github.com/zendern/getprs/blob/master/screenshots/json.png)
+
+Text output
 ![in action](https://github.com/zendern/getprs/blob/master/screenshots/text.png)
 
