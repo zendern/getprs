@@ -19,7 +19,7 @@ import . "github.com/logrusorgru/aurora"
 var options = &github.ListOptions{PerPage: 1000}
 
 func main() {
-	if len(os.Args) < 4  {
+	if len(os.Args) < 4 {
 		fmt.Println("Arguments required. <personal access token> <organization> <team name> <renderer [text, json, table] optional>")
 		os.Exit(1)
 	}
@@ -84,7 +84,7 @@ func getPRStatuses(ctx context.Context, client *github.Client, org *github.Organ
 	statuses := make([]models.PRStatus, 0)
 	for _, issue := range issues.Issues {
 		positionOfLastSlash := strings.LastIndex(*issue.RepositoryURL, "/")
-		repoUrl := *issue.RepositoryURL;
+		repoUrl := *issue.RepositoryURL
 		repoName := repoUrl[positionOfLastSlash+1 : len(repoUrl)]
 		prReviews, _, err := client.PullRequests.ListReviews(ctx, *org.Name, repoName, *issue.Number, options)
 		if err != nil {
@@ -102,10 +102,10 @@ func getPRStatuses(ctx context.Context, client *github.Client, org *github.Organ
 		}
 
 		statuses = append(statuses, models.PRStatus{
-			Username:       *issue.User.Login,
-			Title:          *issue.Title,
-			ApprovedStatus: uiApprovedState,
-			PullRequestUrl: *issue.HTMLURL,
+			Username:        *issue.User.Login,
+			Title:           *issue.Title,
+			ApprovedStatus:  uiApprovedState,
+			PullRequestUrl:  *issue.HTMLURL,
 			TimeSinceOpened: *issue.CreatedAt,
 		})
 	}
@@ -148,7 +148,7 @@ func getAllOpenPRs(ctx context.Context, client *github.Client, org *github.Organ
 	return issues
 }
 
-func getAllTeamMembers(ctx context.Context, client *github.Client,foundTeam *github.Team) []*github.User {
+func getAllTeamMembers(ctx context.Context, client *github.Client, foundTeam *github.Team) []*github.User {
 	fmt.Println(">>> GETTING MEMBERS ON TEAM : ", Bold(*foundTeam.Name))
 	teamMemberOpts := &github.TeamListTeamMembersOptions{ListOptions: *options}
 	teamMembers, _, err := client.Teams.ListTeamMembers(ctx, *foundTeam.ID, teamMemberOpts)
