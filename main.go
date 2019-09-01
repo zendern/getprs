@@ -36,21 +36,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	var renderType string
-	if len(os.Args) == 5 {
-		trimmedRenderType := strings.Trim(os.Args[4], " ")
-		if 	trimmedRenderType == "" {
-			renderType = "table"
-		}else{
-			if trimmedRenderType == "table" || trimmedRenderType == "text" || trimmedRenderType == "json"{
-				renderType = os.Args[4]
-			}else{
-				fmt.Println("Renderer must be one of the allowed values. [txt or json]")
-				os.Exit(1)
-			}
-		}
-	}else{
-		renderType = "table"
+	var renderStr string
+	if len(os.Args) < 5 || strings.TrimSpace(os.Args[4]) == "" {
+		renderStr = "table"
+	} else {
+		renderStr = strings.TrimSpace(os.Args[4])
+	}
+	renderFn, ok := renderer.Renderers[renderStr]
+	if !ok {
+		fmt.Println("Renderer must be one of the allowed values. [table,text,json]")
+		os.Exit(1)
 	}
 
 	accessToken := os.Args[1]
@@ -72,13 +67,7 @@ func main() {
 
 	sort.Sort(models.ByStatus(statuses))
 
-	if renderType == "json" {
-		renderer.RenderJson(statuses)
-	} else if renderType == "text" {
-		renderer.RenderText(statuses)
-	} else if renderType == "table" {
-		renderer.RenderTable(statuses)
-	}
+	renderFn(statuses)
 }
 
 func getOrgByName(ctx context.Context, client *github.Client, orgName string) *github.Organization {
