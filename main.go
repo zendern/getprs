@@ -19,7 +19,7 @@ import . "github.com/logrusorgru/aurora"
 var options = &github.ListOptions{PerPage: 1000}
 
 func main() {
-	if len(os.Args) < 4  {
+	if len(os.Args) < 4 {
 		fmt.Println("Arguments required. <personal access token> <organization> <team name> <renderer [text, json, table] optional>")
 		os.Exit(1)
 	}
@@ -36,21 +36,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	var renderType string
-	if len(os.Args) == 5 {
-		trimmedRenderType := strings.Trim(os.Args[4], " ")
-		if 	trimmedRenderType == "" {
-			renderType = "table"
-		}else{
-			if trimmedRenderType == "table" || trimmedRenderType == "text" || trimmedRenderType == "json"{
-				renderType = os.Args[4]
-			}else{
-				fmt.Println("Renderer must be one of the allowed values. [txt or json]")
-				os.Exit(1)
-			}
-		}
-	}else{
-		renderType = "table"
+	var renderStr string
+	if len(os.Args) < 5 || strings.TrimSpace(os.Args[4]) == "" {
+		renderStr = "table"
+	} else {
+		renderStr = strings.TrimSpace(os.Args[4])
+	}
+	renderFn, ok := renderer.Renderers[renderStr]
+	if !ok {
+		fmt.Println("Renderer must be one of the allowed values. [table,text,json]")
+		os.Exit(1)
 	}
 
 	accessToken := os.Args[1]
@@ -72,13 +67,7 @@ func main() {
 
 	sort.Sort(models.ByStatus(statuses))
 
-	if renderType == "json" {
-		renderer.RenderJson(statuses)
-	} else if renderType == "text" {
-		renderer.RenderText(statuses)
-	} else if renderType == "table" {
-		renderer.RenderTable(statuses)
-	}
+	renderFn(statuses)
 }
 
 func getOrgByName(ctx context.Context, client *github.Client, orgName string) *github.Organization {
@@ -95,7 +84,7 @@ func getPRStatuses(ctx context.Context, client *github.Client, org *github.Organ
 	statuses := make([]models.PRStatus, 0)
 	for _, issue := range issues.Issues {
 		positionOfLastSlash := strings.LastIndex(*issue.RepositoryURL, "/")
-		repoUrl := *issue.RepositoryURL;
+		repoUrl := *issue.RepositoryURL
 		repoName := repoUrl[positionOfLastSlash+1 : len(repoUrl)]
 		prReviews, _, err := client.PullRequests.ListReviews(ctx, *org.Name, repoName, *issue.Number, options)
 		if err != nil {
@@ -113,10 +102,10 @@ func getPRStatuses(ctx context.Context, client *github.Client, org *github.Organ
 		}
 
 		statuses = append(statuses, models.PRStatus{
-			Username:       *issue.User.Login,
-			Title:          *issue.Title,
-			ApprovedStatus: uiApprovedState,
-			PullRequestUrl: *issue.HTMLURL,
+			Username:        *issue.User.Login,
+			Title:           *issue.Title,
+			ApprovedStatus:  uiApprovedState,
+			PullRequestUrl:  *issue.HTMLURL,
 			TimeSinceOpened: *issue.CreatedAt,
 		})
 	}
@@ -159,7 +148,7 @@ func getAllOpenPRs(ctx context.Context, client *github.Client, org *github.Organ
 	return issues
 }
 
-func getAllTeamMembers(ctx context.Context, client *github.Client,foundTeam *github.Team) []*github.User {
+func getAllTeamMembers(ctx context.Context, client *github.Client, foundTeam *github.Team) []*github.User {
 	fmt.Println(">>> GETTING MEMBERS ON TEAM : ", Bold(*foundTeam.Name))
 	teamMemberOpts := &github.TeamListTeamMembersOptions{ListOptions: *options}
 	teamMembers, _, err := client.Teams.ListTeamMembers(ctx, *foundTeam.ID, teamMemberOpts)
