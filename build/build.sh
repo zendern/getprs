@@ -16,6 +16,7 @@ platforms=("windows/amd64" "windows/386" "linux/amd64")
 
 for platform in "${platforms[@]}"
 do
+    echo "building $platform..."
     platform_split=(${platform//\// })
     GOOS=${platform_split[0]}
     GOARCH=${platform_split[1]}
@@ -30,3 +31,5 @@ do
         exit 1
     fi
 done
+
+echo "build finished"
