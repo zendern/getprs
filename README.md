@@ -1,4 +1,5 @@
 # Gets PRs by Org and Team
+[![Build Status](https://travis-ci.com/zendern/getprs.svg?branch=master)](https://travis-ci.com/zendern/getprs)
 Most of the time you want to be able to easily look at the PRs for your team so that they can be reviewed on an occasional basis. This application simplifies that by doing all the leg work for you.
 
 # How to Install
