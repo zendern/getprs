@@ -9,7 +9,13 @@ Download the executable found in this repo
 * Windows (32) : [getprs.exe](https://github.com/zendern/getprs/blob/master/distrubitions/getprs-windows-386.exe)
 * Windows (64) : [getprs.exe](https://github.com/zendern/getprs/blob/master/distrubitions/getprs-windows-amd64.exe)
 
-Or build clone the repo and build it yourself for whatever platform you need.
+Or clone the repo and build it yourself for whatever platform you need.
+
+## How to build it
+Pre-Req: 
+Have go 1.11 or greater installed
+1. Clone the repo
+2. Execute the following build script ./build/build.sh
 
 # How to run it
 
