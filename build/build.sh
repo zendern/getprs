@@ -3,7 +3,11 @@
 set -e
 
 # scan for vulnerabilities first
-./build/nancy-darwin.amd64-v0.0.22 go.sum
+if [ "$(uname)" == "Darwin" ]; then
+    ./build/nancy-darwin.amd64-v0.0.22 go.sum
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    ./build/nancy-linux.amd64-v0.0.22 go.sum
+fi
 
 export GO111MODULE=on
 
