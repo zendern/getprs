@@ -5,10 +5,10 @@ Most of the time you want to be able to easily look at the PRs for your team so 
 # How to Install
 Download the executable found in this repo
 
-* MacOSX : [getprs](https://github.com/zendern/getprs/blob/master/distrubitions/getprs-darwin-amd64)
-* Linux : [getprs](https://github.com/zendern/getprs/blob/master/distrubitions/getprs-linux-amd64)
-* Windows (32) : [getprs.exe](https://github.com/zendern/getprs/blob/master/distrubitions/getprs-windows-386.exe)
-* Windows (64) : [getprs.exe](https://github.com/zendern/getprs/blob/master/distrubitions/getprs-windows-amd64.exe)
+* MacOSX : [getprs](https://github.com/zendern/getprs/releases/latest/download/getprs-linux-amd64)
+* Linux : [getprs](https://github.com/zendern/getprs/releases/latest/download/getprs-linux-amd64)
+* Windows (32) : [getprs.exe](https://github.com/zendern/getprs/releases/latest/download/getprs-windows-386.exe)
+* Windows (64) : [getprs.exe](https://github.com/zendern/getprs/releases/latest/download/getprs-windows-amd64.exe)
 
 Or clone the repo and build it yourself for whatever platform you need.
 
