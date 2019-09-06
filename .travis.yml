@@ -1,17 +1,14 @@
 language: go
-
 go:
-  - 1.13.x
-
+- 1.13.x
 script:
-  - bash ./build/build.sh
-
+- bash ./build/build.sh
 deploy:
   provider: releases
   api_key:
-    secure: "N/lUwrfa8mrJ7bkURWn9Ku+zCe6oe7x8umJPGqLgpuzWlWYnbYok890iF1SZhjeu0CMeV0TS92vRGPcg9oPERFwWiRd/wIONdgDFDOXthAF2KkgfDe4l0X7XNldWn/yAua0z3a5iM8TICQTwuJzOY26rAL3TqIZJpF7DBAtUVKqR6rKR4UrXe9EFqFYiDcaqPZWVc0kauwWY8hpCQo/M94PgFaAv7xyW0zsXorUIlCD05o/S3LDh274mq1ZW/Q4SzabH+RpR0Bz/kAmUgeu+YbIu9yvFOEOpalepL6ML5qIhNwzWhBGhmLP8kdGhnWRKNuLlOKA7BYSUQ+2l0i1WdFaVDsK/73FPNm3cAM6ItNd5cjeA7jbA3b4JZE641JlOQO+alWrejxUjjl9gA8phsMLtwXnHM3J/o76D/xFk/AG/VxB5VDm12ryqXCTq8ZkGyXjGvgzWITBqiY2MyX8XKB0yNMWxoCQQ6t/Mrjxiu1A0OWTVBHL54ts5hIXjGCAhXbZSOZ0Y4c3M6ldeZOwewReCrlJgDRseExE0nC3Mb7eq9Gx/Be82IROOzvrnETDlBN9i680gJGDlnalMWlrlkszatjuEoMVzczigKic6Ry/4ZVOHMaOSfzwr9Z+P4BthFZcl19va5TJRZN9Jc6yXuCqNqJNQCfgOeSbF/JE+QNM="
+    secure: uYBQu3f7ALH56H1RIrl3bfHEFoEL72AE0Yzt311ya5GtpJ3szWI+YoZS7A0kxMXmllSl07wajRVwGljPFezUPK5GYoslhhnXyu76BljfP7OluU48JzHg19eZpKw1eGXZPkfF8FPormJlvwP6Y4pl45PsUGv/eUtT/zkqLFJfC1Sb1/wslcOtgf2C/Jho1VVInMx9KW2ZRC5jdJmhUTk6snBffZojUOCRIeCz8f0Y2jacQlBXh+gK90YcaxBPtxi9sGyNHg2t2/m5Gl9gc0DIs9Kh0sT6oAW4vF0gx7Rox2g8HUGk8air9enWp3bLyuV06O8RKNV3lCJSYc/6Ahv55XSZ6kYotH1auIm8zqFEQerqapq30fQ7vM2t/rjkXdqRq0QPxvIDB7wWnD8X8Qr74yym3gChBn9IqMwc+hht0/IjkJdEc+Nw/MLaZqUD9Attac6j9yijiX5XsfvkHlINqzlrEAX49iplXsZjDnX5FRPCYP1qZfo0dHZx774ixhXuCTym2perY7EHEi9n8mjFgEuDQX6g4y23C1N1jBgBwNJZfMh2+zaVp0sIoALxuyykHNXPTuUZK5QdpMKIAT3yVDj9tVnDR+5yzV+jT0C0HNaPmahzRyXUcXLuGyvv9ivv0Dhsw9qXH318KxTNzhukKxDgQXxFfpqRgKgFB0xpJbg=
   file_glob: true
-  file: "distributions/*"
-  skip_cleanup: true
+  file: distributions/*
   on:
+    repo: zendern/getprs
     tags: true
