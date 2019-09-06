@@ -1,0 +1,24 @@
+language: go
+
+go:
+  - 1.13.x
+
+script:
+  - bash ./build/build.sh
+
+before_deploy:
+  # Set up git user name and tag this commit
+  - git config --local user.name "Nathan Zender"
+  - git config --local user.email "github@nathanzender.com"
+  - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
+  - git tag $TRAVIS_TAG
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "EKFhhR+k9ZcJh9CE7Nz+SxdzFUwpuCZqXS7fYOEwQYKBSYCIWUTOqpRwdzX+piY4oaiyINC1tkhyotBLoZjltniMHD41hheIvrp6Y8/YXbNfS3QAVRJHuDzUCvQqM5F88owA/6xOwy/Ov188L+YvwXOlhp8iEktAVBeWFFJPRFIxFUXcn0W1k46RIIM8GAWcN2/iKBWjNyB4ZNTaLZkq6f5AN3uiZjj4NgttNnK5iCrNENpj+BnhX5vwkXbD14dD7P2jgMgZGc0r9lvBysgr9tMhBB0z+St12vugbiT9o2crxEGlgw9P59TJiwFsuiJ8fhfP0kldnUKkEC1zK+GoNwGX5/gzmX/dB3Ra91MHtthbAT4cU5DXPqCfUMnXX5nthN+cay/HJGojorTs3K2UAFEjP50XopRv9Ez1FozvxwERJbYbgJWuoqrAq5IOecHU2BCGWLLX5OoY7g71czy8unM0UzN1UPMqCkj+YXLkFn+DoY7lFmRflhBTaOQd7iG0UFwccaEwBRnu0x/PwThUwF3VgXk5vorPaC8fXS6hXIL8YJP/m0O4DvgKUYNB1HoWPmlZiMDTe4vM+d0bS9Tpoe7IU1nfh/E9jFsS9cAHNC/UyFDMKlLGmZ92DcCcaxsRhkkdOjso1VtjPvjClWzhOPd6Sj+V4/HMGXb0iX4Ag/Q="
+  file_glob: true
+  file: "distributions/*"
+  skip_cleanup: true
+  on:
+    tags: true
