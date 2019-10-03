@@ -155,6 +155,11 @@ func getAllOpenPRs(ctx context.Context, client *github.Client, org *github.Organ
 			actualOpenedIssues = append(actualOpenedIssues, issue)
 		}
 	}
+
+	sort.Slice(actualOpenedIssues, func(i, j int) bool {
+		return actualOpenedIssues[i].CreatedAt.Unix() > actualOpenedIssues[j].CreatedAt.Unix()
+	})
+
 	return actualOpenedIssues
 }
 
