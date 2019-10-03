@@ -12,7 +12,7 @@ fi
 export GO111MODULE=on
 
 # if success than go ahead an build the binaries
-platforms=("windows/amd64" "windows/386" "linux/amd64")
+platforms=("windows/amd64" "windows/386" "linux/amd64" "darwin/amd64")
 
 for platform in "${platforms[@]}"
 do
