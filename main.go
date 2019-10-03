@@ -80,9 +80,9 @@ func getOrgByName(ctx context.Context, client *github.Client, orgName string) *g
 	return org
 }
 
-func getPRStatuses(ctx context.Context, client *github.Client, org *github.Organization, issues *github.IssuesSearchResult) []models.PRStatus {
+func getPRStatuses(ctx context.Context, client *github.Client, org *github.Organization, issues []github.Issue) []models.PRStatus {
 	statuses := make([]models.PRStatus, 0)
-	for _, issue := range issues.Issues {
+	for _, issue := range issues {
 		positionOfLastSlash := strings.LastIndex(*issue.RepositoryURL, "/")
 		repoUrl := *issue.RepositoryURL
 		repoName := repoUrl[positionOfLastSlash+1 : len(repoUrl)]
@@ -132,7 +132,7 @@ func getTeam(ctx context.Context, client *github.Client, org *github.Organizatio
 	return foundTeam
 }
 
-func getAllOpenPRs(ctx context.Context, client *github.Client, org *github.Organization, foundTeam *github.Team, teamMembers []*github.User) *github.IssuesSearchResult {
+func getAllOpenPRs(ctx context.Context, client *github.Client, org *github.Organization, foundTeam *github.Team, teamMembers []*github.User) []github.Issue {
 	fmt.Println(">>> FINDING ALL OPEN PRS FOR TEAM : ", Bold(*foundTeam.Name))
 	fmt.Println("\n")
 	searchOpts := &github.SearchOptions{ListOptions: *options}
@@ -145,7 +145,17 @@ func getAllOpenPRs(ctx context.Context, client *github.Client, org *github.Organ
 		fmt.Println(">>> Failed to find issues for query - " + q + "<<< : " + err.Error())
 		os.Exit(1)
 	}
-	return issues
+
+	/*
+		For whatever reason even searching for is:open might return close PR ¯\_(ツ)_/¯ So we loop and exclude them to make it really what we want
+	*/
+	actualOpenedIssues := make([]github.Issue, 0)
+	for _, issue := range issues.Issues {
+		if *issue.State == "open" {
+			actualOpenedIssues = append(actualOpenedIssues, issue)
+		}
+	}
+	return actualOpenedIssues
 }
 
 func getAllTeamMembers(ctx context.Context, client *github.Client, foundTeam *github.Team) []*github.User {
