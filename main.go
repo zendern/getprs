@@ -65,7 +65,7 @@ func main() {
 	issues := getAllOpenPRs(ctx, client, org, foundTeam, teamMembers)
 	statuses := getPRStatuses(ctx, client, org, issues)
 
-	sort.Sort(models.ByStatus(statuses))
+	sort.Sort(models.ByStatusAndTime(statuses))
 
 	renderFn(statuses)
 }
@@ -104,6 +104,7 @@ func getPRStatuses(ctx context.Context, client *github.Client, org *github.Organ
 		statuses = append(statuses, models.PRStatus{
 			Username:        *issue.User.Login,
 			Title:           *issue.Title,
+			Approved:        hasBeenApproved,
 			ApprovedStatus:  uiApprovedState,
 			PullRequestUrl:  *issue.HTMLURL,
 			TimeSinceOpened: *issue.CreatedAt,
@@ -155,10 +156,6 @@ func getAllOpenPRs(ctx context.Context, client *github.Client, org *github.Organ
 			actualOpenedIssues = append(actualOpenedIssues, issue)
 		}
 	}
-
-	sort.Slice(actualOpenedIssues, func(i, j int) bool {
-		return actualOpenedIssues[i].CreatedAt.Unix() > actualOpenedIssues[j].CreatedAt.Unix()
-	})
 
 	return actualOpenedIssues
 }
