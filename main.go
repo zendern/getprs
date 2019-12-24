@@ -23,50 +23,51 @@ func main() {
 		fmt.Println("Arguments required. <personal access token> <organization> <team name> <renderer [text, json, table] optional>")
 		os.Exit(1)
 	}
-	if strings.Trim(os.Args[1], " ") == "" {
-		fmt.Println("Personal Access Token must not be blank")
-		os.Exit(1)
-	}
-	if strings.Trim(os.Args[2], " ") == "" {
-		fmt.Println("Organization name must not be blank")
-		os.Exit(1)
-	}
-	if strings.Trim(os.Args[3], " ") == "" {
-		fmt.Println("Team name must not be blank")
-		os.Exit(1)
-	}
-
-	var renderStr string
-	if len(os.Args) < 5 || strings.TrimSpace(os.Args[4]) == "" {
-		renderStr = "table"
-	} else {
-		renderStr = strings.TrimSpace(os.Args[4])
-	}
-	renderFn, ok := renderer.Renderers[renderStr]
-	if !ok {
-		fmt.Println("Renderer must be one of the allowed values. [table,text,json]")
-		os.Exit(1)
-	}
 
 	accessToken := os.Args[1]
 	orgName := os.Args[2]
 	teamName := os.Args[3]
 
+	var renderType string
+	if len(os.Args) < 5 || strings.TrimSpace(os.Args[4]) == "" {
+		renderType = "table"
+	} else {
+		renderType = strings.TrimSpace(os.Args[4])
+	}
+
+	ShowPrs(accessToken, orgName, teamName, renderType)
+}
+
+func ShowPrs(accessToken string, orgName string, teamName string, renderType string) {
+	renderFn, ok := renderer.Renderers[renderType]
+	if !ok {
+		fmt.Println("Renderer must be one of the allowed values. [table,text,json]")
+		os.Exit(1)
+	}
+	if strings.Trim(accessToken, " ") == "" {
+		fmt.Println("Personal Access Token must not be blank")
+		os.Exit(1)
+	}
+	if strings.Trim(orgName, " ") == "" {
+		fmt.Println("Organization name must not be blank")
+		os.Exit(1)
+	}
+	if strings.Trim(teamName, " ") == "" {
+		fmt.Println("Team name must not be blank")
+		os.Exit(1)
+	}
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: accessToken},
 	)
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
-
 	org := getOrgByName(ctx, client, orgName)
 	foundTeam := getTeam(ctx, client, org, teamName)
 	teamMembers := getAllTeamMembers(ctx, client, foundTeam)
 	issues := getAllOpenPRs(ctx, client, org, foundTeam, teamMembers)
 	statuses := getPRStatuses(ctx, client, org, issues)
-
 	sort.Sort(models.ByStatusAndTime(statuses))
-
 	renderFn(statuses)
 }
 
